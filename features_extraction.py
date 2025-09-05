@@ -1,17 +1,21 @@
 import pandas as pd
 
-def extract_features(file):
-    df = pd.read_csv(file)
+def extract_features(file_or_df):
+    # Accept both file path and dataframe
+    if isinstance(file_or_df, str):
+        df = pd.read_csv(file_or_df, on_bad_lines="skip")
+    else:
+        df = file_or_df.copy()   # already a dataframe
+    
     df = df.sort_values('timestamp')
 
     hold_times = {}
     dd_times = []
     last_down_time = None
     last_key = None
-
     down_times = {}
 
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         key = row['key']
         event = row['event_type']
         time = row['timestamp']
@@ -36,5 +40,5 @@ def extract_features(file):
     }
 
 # Usage
-features = extract_features("advait_keystrokes.csv")
-print(features)
+# features = extract_features("data/advait_keystrokes.csv")
+# print(features)
