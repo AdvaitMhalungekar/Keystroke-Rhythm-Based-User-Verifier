@@ -5,31 +5,31 @@ import joblib
 from features_flattener import flatten_features
 import webbrowser
 
-# Load model + encoder + top digraphs
 model = joblib.load("models/xgb_keystroke_model.pkl")
 le = joblib.load("models/label_encoder.pkl")
 top_digraphs = joblib.load("models/top_digraphs.pkl")
 feature_names = joblib.load("models/feature_names.pkl")
 
-# Buffer for all keystrokes
 fieldnames = ["user_id", "key", "event_type", "timestamp"]
 buffer = []
 
 def process_all(buffer):
-    """Process the entire keystroke buffer once and predict the user."""
+    """Convert full key stream into feature vector & predict user."""
+    
     df = pd.DataFrame(buffer, columns=fieldnames)
+
     feats = flatten_features(df, label=None, top_digraphs=top_digraphs)
-    df_feat = pd.DataFrame([feats]).fillna(0).infer_objects(copy=False)
 
-    if "label" in df_feat.columns:
-        df_feat = df_feat.drop("label", axis=1)
+    df_feat = pd.DataFrame([feats])
 
-    # Reindex to match training order
     df_feat = df_feat.reindex(columns=feature_names, fill_value=0)
 
-    pred = model.predict(df_feat)
+    X = df_feat.astype(float).to_numpy()
+
+    pred = model.predict(X)
     user = le.inverse_transform(pred)[0]
-    print(f"\n[FINAL PREDICTION] User identified as: {user}")
+
+    print(f"[FINAL PREDICTION] User: {user}")
     return user
 
 def on_press(key):
@@ -37,7 +37,7 @@ def on_press(key):
         key_str = key.char
     except AttributeError:
         key_str = str(key)
-
+        
     buffer.append(["unknown", key_str, "down", time.time()])
 
 def on_release(key):
@@ -49,18 +49,17 @@ def on_release(key):
     buffer.append(["unknown", key_str, "up", time.time()])
 
     if key == keyboard.Key.esc:
-        print("[INFO] ESC pressed. Stopping and predicting user...")
-        # Process everything when ESC is pressed
+        print("\n[INFO] ESC pressed → Running prediction...")
         process_all(buffer)
         return False
 
-# --- Start ---
 url = "https://monkeytype.com/"
 webbrowser.open(url)
 
-print("[INFO] Opening website...")
+print("[INFO] Opening MonkeyType for typing...")
 time.sleep(3)
-print("[INFO] Real-time keystroke verification started... Press ESC to stop and get final prediction.")
+print("[INFO] Keystroke Verification Active. Type normally.")
+print("[INFO] Press ESC to finish & identify user.\n")
 
 with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
     listener.join()
