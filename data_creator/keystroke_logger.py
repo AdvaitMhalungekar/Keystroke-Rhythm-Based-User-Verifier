@@ -6,7 +6,7 @@ import webbrowser
 
 USER_ID = "advait"
 
-filename = f"{USER_ID}_keystrokes.csv"
+filename = f"data/{USER_ID}_keystrokes.csv"
 fieldnames = ["user_id", "key", "event_type", "timestamp"]
 
 if not os.path.exists(filename):
@@ -60,3 +60,6 @@ time.sleep(3)
 with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
     print(f"[INFO] Logging started for {USER_ID}... Press ESC to stop.")
     listener.join()
+
+
+# 10439
