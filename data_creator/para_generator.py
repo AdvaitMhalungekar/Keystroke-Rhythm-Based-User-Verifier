@@ -16,7 +16,7 @@ genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel("gemini-2.5-flash")
 
 prompt = """
-Generate a long random paragraph (50-80 words) for typing practice.
+Generate a long random paragraph (40 words) for typing practice.
 It should look natural, NOT meaningful. Mix:
 - simple words
 - all lowercased
