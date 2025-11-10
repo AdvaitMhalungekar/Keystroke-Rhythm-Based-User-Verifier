@@ -13,16 +13,18 @@ keystroke_buffer = []
 
 @app.route("/")
 def home():
-    text = generate_text()
-#     text = """ability able about above across act action active actual add address admit adult
-# advance advice affect after again against age agency agent agree ahead air
-# all allow almost alone along already also although always among amount analysis
-# and animal answer any anyone anything appear apply approach area argue arm
-# around arrive art article artist as ask assume at attack attention attorney
-# audience author available avoid away baby back bad bag ball bank bar base
-# basic basis be beat beautiful because become bed before begin behavior behind
-# believe benefit best better between beyond big bill billion bit black blood
-# blue board body book born both box build building business but buy by"""
+    try:
+        text = generate_text()
+    except:
+        text = """ability able about above across act action active actual add address admit adult
+    advance advice affect after again against age agency agent agree ahead air
+    all allow almost alone along already also although always among amount analysis
+    and animal answer any anyone anything appear apply approach area argue arm
+    around arrive art article artist as ask assume at attack attention attorney
+    audience author available avoid away baby back bad bag ball bank bar base
+    basic basis be beat beautiful because become bed before begin behavior behind
+    believe benefit best better between beyond big bill billion bit black blood
+    blue board body book born both box build building business but buy by"""
     return render_template("index.html", text=text)
 
 @app.route("/log", methods=["POST"])
@@ -45,12 +47,23 @@ def predict():
     df_feat = pd.DataFrame([feats]).reindex(columns=feature_names, fill_value=0)
 
     X = df_feat.astype(float).to_numpy()
-    pred = model.predict(X)
-    user = le.inverse_transform(pred)[0]
 
-    keystroke_buffer = []  
+    # ✅ Get probabilities instead of just labels
+    probs = model.predict_proba(X)[0]
+    max_prob = probs.max()
+    pred_idx = probs.argmax()
 
-    return jsonify({"user": user})
+    # ✅ Threshold-based rejection
+    threshold = 0.6  # you can tune this based on validation
+    print("\n\n\n\nProbability: "+ max_prob) 
+    if max_prob < threshold:
+        user = "unknown"
+    else:
+        user = le.inverse_transform([pred_idx])[0]
+
+    keystroke_buffer = []
+
+    return jsonify({"user": user, "confidence": float(max_prob)})
 
 if __name__ == "__main__":
     app.run(debug=True)
