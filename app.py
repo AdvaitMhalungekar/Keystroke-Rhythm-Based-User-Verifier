@@ -55,7 +55,8 @@ def predict():
 
     # ✅ Threshold-based rejection
     threshold = 0.6  # you can tune this based on validation
-    print("\n\n\n\nProbability: "+ max_prob) 
+    print("\n\n\n\nProbability: ")
+    print(max_prob) 
     if max_prob < threshold:
         user = "unknown"
     else:
