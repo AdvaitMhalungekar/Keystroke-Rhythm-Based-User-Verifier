@@ -5,21 +5,18 @@ import os
 
 load_dotenv()
 
-API_KEY = os.getenv("GEMINI_API_KEY")
+API_KEY = os.getenv("GEMINI_API_KEY_1")
 
 if not API_KEY:
     raise ValueError("API key not found! Ensure GEMINI_API_KEY is set in .env file")
 
-genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel("gemini-2.5-pro")
 
-API_KEY = "AIzaSyAqxnRWV_dHHOqIq-MiEf98-KbKtZtchMY"   
 genai.configure(api_key=API_KEY)
 
-model = genai.GenerativeModel("gemini-2.5-pro")
+model = genai.GenerativeModel("gemini-2.5-flash")
 
 prompt = """
-Generate a long random paragraph (50-100 words) for typing practice.
+Generate a long random paragraph (50-80 words) for typing practice.
 It should look natural, NOT meaningful. Mix:
 - simple words
 - all lowercased
