@@ -48,12 +48,12 @@ def predict():
 
     X = df_feat.astype(float).to_numpy()
 
-    # ✅ Get probabilities instead of just labels
+    # Get probabilities instead of just labels
     probs = model.predict_proba(X)[0]
     max_prob = probs.max()
     pred_idx = probs.argmax()
 
-    # ✅ Threshold-based rejection
+    # Threshold-based rejection
     threshold = 0.6  # you can tune this based on validation
     print("\n\n\n\nProbability: ")
     print(max_prob) 
@@ -67,4 +67,4 @@ def predict():
     return jsonify({"user": user, "confidence": float(max_prob)})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True,host='0.0.0.0', port=5000)
