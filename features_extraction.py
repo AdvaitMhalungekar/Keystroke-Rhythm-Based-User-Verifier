@@ -1,5 +1,29 @@
 import pandas as pd
 from collections import defaultdict
+import numpy as np
+
+def remove_outliers_zscore(values, threshold=3):
+    """
+    Remove values whose Z-score exceeds threshold.
+    """
+    
+    if len(values) == 0:
+        return values
+
+    mean = np.mean(values)
+    std = np.std(values)
+
+    if std == 0:
+        return values
+
+    filtered = []
+
+    for x in values:
+        z = (x - mean) / std
+        if abs(z) <= threshold:
+            filtered.append(x)
+    
+    return filtered
 
 def extract_features(file_or_df):
     # Accept both file path and dataframe
@@ -8,13 +32,13 @@ def extract_features(file_or_df):
     else:
         df = file_or_df.copy()   # already a dataframe
 
-    # ✅ Ensure valid timestamps and convert to numeric
+    # Ensure valid timestamps and convert to numeric
     df = df.dropna(subset=["timestamp", "key", "event_type"])
     df["timestamp"] = pd.to_numeric(df["timestamp"], errors="coerce")
     df = df.dropna(subset=["timestamp"])
     df = df.sort_values("timestamp")
 
-    # ✅ Correct handling for multiple key presses
+    # Correct handling for multiple key presses
     down_times = defaultdict(list)
     hold_times = {}
     dd_times = []
@@ -42,6 +66,8 @@ def extract_features(file_or_df):
             hold_time = time - start
             hold_times.setdefault(key, []).append(hold_time)
 
+    for key in hold_times:
+        hold_times[key] = remove_outliers_zscore(hold_times[key])
     return {
         "avg_hold_time": {k: sum(v)/len(v) for k,v in hold_times.items()},
         "dd_times": dd_times
