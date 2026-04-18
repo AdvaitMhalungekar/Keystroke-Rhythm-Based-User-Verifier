@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dashboard - Keystroke 2FA</title>
+    <style>
+      body {
+        background: #0d0d0d;
+        color: #dcdcdc;
+        font-family: monospace;
+        height: 100vh;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .dash-container {
+        background: #111;
+        padding: 40px 48px 32px 48px;
+        border-radius: 10px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+        min-width: 320px;
+        text-align: center;
+      }
+      .dash-container h2 {
+        color: #00eaff;
+        font-weight: 400;
+        margin-bottom: 18px;
+        letter-spacing: 1px;
+      }
+      .dash-container .user {
+        color: #4caf50;
+        font-size: 22px;
+        margin-bottom: 10px;
+      }
+      .dash-container .success {
+        color: #90caf9;
+        font-size: 18px;
+        margin-top: 18px;
+      }
+      .dash-container a {
+        display: inline-block;
+        margin-top: 28px;
+        color: #00eaff;
+        text-decoration: none;
+        font-size: 16px;
+        border-bottom: 1px dotted #00eaff44;
+        transition: color 0.2s;
+      }
+      .dash-container a:hover {
+        color: #009bb3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dash-container">
+      <h2>Welcome, <span class="user">{{ username }}</span></h2>
+      <div class="success">Authentication Successful</div>
+      <a href="/">Logout</a>
+    </div>
+  </body>
+</html>

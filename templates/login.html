@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Login - Keystroke 2FA</title>
+    <style>
+      body {
+        background: #0d0d0d;
+        color: #dcdcdc;
+        font-family: monospace;
+        height: 100vh;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .login-container {
+        background: #111;
+        padding: 32px 32px 24px 32px;
+        border-radius: 10px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+        width: 340px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      h2 {
+        margin-bottom: 24px;
+        font-weight: 400;
+        letter-spacing: 1px;
+        color: #00eaff;
+      }
+      input {
+        width: 100%;
+        padding: 12px 14px;
+        margin-bottom: 18px;
+        border: none;
+        border-radius: 6px;
+        background: #222;
+        color: #dcdcdc;
+        font-size: 18px;
+        outline: none;
+        transition: box-shadow 0.2s;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+      }
+      input:focus {
+        box-shadow: 0 0 0 2px #00eaff44;
+      }
+      button {
+        width: 100%;
+        padding: 12px 0;
+        background: #00eaff;
+        color: #111;
+        border: none;
+        border-radius: 6px;
+        font-size: 18px;
+        font-family: monospace;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.2s;
+        margin-bottom: 8px;
+      }
+      button:hover {
+        background: #009bb3;
+      }
+      .error {
+        color: #ff4d4d;
+        margin-bottom: 10px;
+        font-size: 15px;
+        min-height: 20px;
+        text-align: center;
+      }
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+      .modal.active {
+        visibility: visible;
+        opacity: 1;
+      }
+      .modal-content {
+        background: #181818;
+        color: #dcdcdc;
+        padding: 32px 40px;
+        border-radius: 10px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+        text-align: center;
+        min-width: 220px;
+        font-size: 20px;
+      }
+      .modal-content button {
+        margin-top: 18px;
+        background: #00eaff;
+        color: #181818;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <h2>Keystroke 2FA Login</h2>
+      <div class="error" id="error-msg"></div>
+      <input
+        type="text"
+        id="username"
+        placeholder="Username"
+        autocomplete="username"
+        autofocus
+      />
+      <input
+        type="password"
+        id="password"
+        placeholder="Password"
+        autocomplete="current-password"
+      />
+      <button id="login-btn">Login</button>
+    </div>
+
+    <div class="modal" id="modal">
+      <div class="modal-content" id="modal-content">
+        <!-- Message here -->
+        <button onclick="closeModal()">OK</button>
+      </div>
+    </div>
+
+    <script>
+      const loginBtn = document.getElementById("login-btn");
+      const errorMsg = document.getElementById("error-msg");
+      const modal = document.getElementById("modal");
+      const modalContent = document.getElementById("modal-content");
+
+      function showModal(msg, cb) {
+        modalContent.childNodes[0].textContent = msg;
+        modal.classList.add("active");
+        modalContent.querySelector("button").onclick = function () {
+          closeModal();
+          if (cb) cb();
+        };
+      }
+      function closeModal() {
+        modal.classList.remove("active");
+      }
+
+      loginBtn.onclick = async function () {
+        errorMsg.textContent = "";
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value;
+        if (!username || !password) {
+          errorMsg.textContent = "Please enter username and password.";
+          return;
+        }
+        loginBtn.disabled = true;
+        loginBtn.textContent = "Logging in...";
+        try {
+          const res = await fetch("/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            window.location.href = "/verify";
+          } else {
+            errorMsg.textContent = data.error || "Invalid credentials";
+          }
+        } catch (e) {
+          errorMsg.textContent = "Network error.";
+        }
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Login";
+      };
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") loginBtn.click();
+      });
+    </script>
+  </body>
+</html>
