@@ -105,9 +105,7 @@ def predict():
 
     print(f"\n\n\n\n{predicted_user}")
     logged_in_user = session.get("logged_in_user")
-    access_granted = (
-        predicted_user == logged_in_user and max_prob >= threshold
-    )
+    access_granted = bool(predicted_user == logged_in_user and max_prob >= threshold)
 
     keystroke_buffer = []
 
@@ -115,7 +113,7 @@ def predict():
         "predicted_user": predicted_user,
         "confidence": float(max_prob),
         "access_granted": access_granted,
-        "logged_in_user": logged_in_user
+        "logged_in_user": str(logged_in_user) if logged_in_user is not None else None
     })
 
 if __name__ == "__main__":
