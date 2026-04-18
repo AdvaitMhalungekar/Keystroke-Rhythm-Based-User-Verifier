@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Keystroke Verification - 2FA</title>
+    <style>
+      body {
+        font-family: monospace;
+        background: #0d0d0d;
+        color: #dcdcdc;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .container {
+        width: 80%;
+        max-width: 700px;
+        font-size: 24px;
+        line-height: 36px;
+        background: #111;
+        padding: 28px 32px 24px 32px;
+        border-radius: 10px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .char {
+        padding: 1px 2px;
+        white-space: pre-wrap;
+      }
+      .current {
+        border-bottom: 2px solid #00eaff;
+      }
+      .correct {
+        color: #4caf50;
+      }
+      .incorrect {
+        color: #ff4d4d;
+        background: rgba(255, 0, 0, 0.06);
+      }
+      textarea {
+        position: absolute;
+        opacity: 0;
+        left: -9999px;
+      }
+      #status {
+        margin-top: 10px;
+        font-size: 16px;
+        color: #90caf9;
+      }
+      .username {
+        color: #00eaff;
+        font-size: 18px;
+        margin-bottom: 18px;
+        letter-spacing: 1px;
+      }
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+      .modal.active {
+        visibility: visible;
+        opacity: 1;
+      }
+      .modal-content {
+        background: #181818;
+        color: #dcdcdc;
+        padding: 32px 40px;
+        border-radius: 10px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+        text-align: center;
+        min-width: 220px;
+        font-size: 20px;
+      }
+      .modal-content button {
+        margin-top: 18px;
+        background: #00eaff;
+        color: #181818;
+        width: 100%;
+        border-radius: 6px;
+        border: none;
+        padding: 10px 0;
+        font-size: 18px;
+        font-family: monospace;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.2s;
+      }
+      .modal-content button:hover {
+        background: #009bb3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="username">User: {{ username }}</div>
+      <div id="text-display"></div>
+      <div id="status">Start typing... Press ESC to verify.</div>
+    </div>
+    <textarea id="hidden-input"></textarea>
+
+    <div class="modal" id="modal">
+      <div class="modal-content" id="modal-content">
+        <span id="modal-msg"></span>
+        <button onclick="closeModal()">OK</button>
+      </div>
+    </div>
+
+    <script>
+      const paragraph = `{{ text }}`;
+      const display = document.getElementById("text-display");
+      const input = document.getElementById("hidden-input");
+      const status = document.getElementById("status");
+      let index = 0;
+
+      // Render characters
+      display.innerHTML = "";
+      for (const ch of paragraph) {
+        const span = document.createElement("span");
+        span.className = "char";
+        span.textContent = ch;
+        display.appendChild(span);
+      }
+      display.children[0].classList.add("current");
+
+      function now() {
+        return Date.now() / 1000.0;
+      }
+      function sendLog(key, event) {
+        fetch("/log", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key, event, time: now() }),
+        });
+      }
+      function focusInput() {
+        if (document.activeElement !== input) input.focus();
+      }
+      document.addEventListener("click", focusInput);
+      document.addEventListener("keydown", focusInput);
+      input.focus();
+
+      // Modal logic
+      const modal = document.getElementById("modal");
+      const modalMsg = document.getElementById("modal-msg");
+      function showModal(msg, cb) {
+        modalMsg.textContent = msg;
+        modal.classList.add("active");
+        modal.querySelector("button").onclick = function () {
+          closeModal();
+          if (cb) cb();
+        };
+      }
+      function closeModal() {
+        modal.classList.remove("active");
+      }
+
+      async function triggerPredict() {
+        status.innerText = "Verifying...";
+        const res = await fetch("/predict", { method: "POST" });
+        const data = await res.json();
+        if (data.result === "no_data") {
+          status.innerText = "No keystroke data.";
+          return;
+        }
+        if (data.access_granted) {
+          showModal("Access Granted", () => {
+            window.location.href = "/dashboard";
+          });
+        } else {
+          showModal("Access Denied", () => {
+            window.location.href = "/";
+          });
+        }
+      }
+
+      document.addEventListener("keydown", function (e) {
+        focusInput();
+        if (e.key === "Escape") return triggerPredict();
+        sendLog(e.key, "down");
+        if (e.key === "Backspace") {
+          e.preventDefault();
+          if (index > 0) {
+            display.children[index].classList.remove("current");
+            index--;
+            display.children[index].classList.remove("correct", "incorrect");
+            display.children[index].classList.add("current");
+          }
+          return;
+        }
+        const char = e.key.length === 1 ? e.key : null;
+        if (!char) return;
+        e.preventDefault();
+        const expected = display.children[index]?.textContent;
+        if (char === expected) {
+          display.children[index].classList.add("correct");
+        } else {
+          display.children[index].classList.add("incorrect");
+        }
+        display.children[index].classList.remove("current");
+        index++;
+        if (display.children[index])
+          display.children[index].classList.add("current");
+        if (index >= paragraph.length) triggerPredict();
+      });
+      document.addEventListener("keyup", (e) => {
+        sendLog(e.key, "up");
+      });
+    </script>
+  </body>
+</html>
