@@ -57,6 +57,7 @@ def verify_page():
         text = """ability able about above across act action active actual add address admit adult\nadvance advice affect after again against age agency agent agree ahead air\nall allow almost alone along already also although always among amount analysis\nand animal answer any anyone anything appear apply approach area argue arm\naround arrive art article artist as ask assume at attack attention attorney\naudience author available avoid away baby back bad bag ball bank bar base\nbasic basis be beat beautiful because become bed before begin behavior behind\nbelieve benefit best better between beyond big bill billion bit black blood\nblue board body book born both box build building business but buy by"""
     return render_template("verify.html", text=text, username=session["logged_in_user"])
 
+
 # ====================
 # DASHBOARD PAGE
 # ====================
@@ -65,6 +66,15 @@ def dashboard():
     if not session.get("logged_in_user"):
         return redirect(url_for("login_page"))
     return render_template("dashboard.html", username=session["logged_in_user"])
+
+
+# ====================
+# LOGOUT
+# ====================
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login_page"))
 
 
 # ====================
