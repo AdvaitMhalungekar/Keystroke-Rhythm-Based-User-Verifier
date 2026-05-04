@@ -155,7 +155,8 @@
       display.children[0].classList.add("current");
 
       function now() {
-        return Date.now() / 1000.0;
+        // More precise, matches Python's time.time()
+        return (performance.timeOrigin + performance.now()) / 1000.0;
       }
       function sendLog(key, event) {
         fetch("/log", {

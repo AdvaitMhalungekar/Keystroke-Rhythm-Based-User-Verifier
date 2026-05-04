@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import random, time, joblib, pandas as pd
-from features_flattener import flatten_features
+from prev.features_flattener import flatten_features
 from data_creator.para_generator import generate_text
 
 app = Flask(__name__)
@@ -104,6 +104,11 @@ def predict():
     df_feat = pd.DataFrame([feats]).reindex(columns=feature_names, fill_value=0)
     X = df_feat.astype(float).to_numpy()
 
+    # Debug: Print feature vector and shape
+    print("\n[DEBUG] Feature vector for current session:")
+    print(df_feat)
+    print("[DEBUG] Feature vector shape:", X.shape)
+
     probs = model.predict_proba(X)[0]
     max_prob = probs.max()
     pred_idx = probs.argmax()
@@ -113,7 +118,7 @@ def predict():
     else:
         predicted_user = le.inverse_transform([pred_idx])[0]
 
-    print(f"\n\n\n\n{predicted_user}")
+    print(f"\n[DEBUG] Predicted user: {predicted_user}\nProb: {max_prob}")
     logged_in_user = session.get("logged_in_user")
     access_granted = bool(predicted_user == logged_in_user and max_prob >= threshold)
 
