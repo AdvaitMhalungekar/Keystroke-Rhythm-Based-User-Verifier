@@ -11,7 +11,7 @@ app.secret_key = "supersecretkey"  # Change this in production
 users = {
     "advait": "1234",
     "chetan": "1234",
-    "gayatri": "1234",
+    "gayaa": "1234",
     "purva": "1234",
     "siddhant": "1234"
 }
