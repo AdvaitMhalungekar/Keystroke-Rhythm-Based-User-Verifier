@@ -7,6 +7,12 @@ from data_creator.para_generator import generate_text
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "supersecretkey")
 
+# Configure session cookies for iframe/cross-site compatibility in Hugging Face Spaces
+app.config.update(
+    SESSION_COOKIE_SAMESITE='None',
+    SESSION_COOKIE_SECURE=True,
+)
+
 
 # --- Static user credentials ---
 users = {
