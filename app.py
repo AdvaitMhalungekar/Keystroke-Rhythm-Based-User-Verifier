@@ -1,10 +1,11 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import random, time, joblib, pandas as pd
+import os
 from prev.features_flattener import flatten_features
 from data_creator.para_generator import generate_text
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"  # Change this in production
+app.secret_key = os.getenv("SECRET_KEY", "supersecretkey")
 
 
 # --- Static user credentials ---
@@ -132,4 +133,5 @@ def predict():
     })
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    port = int(os.environ.get("PORT", 7860))
+    app.run(debug=True, host='0.0.0.0', port=port)

@@ -1,3 +1,13 @@
+---
+title: Keystroke Rhythm Based User Verifier
+emoji: ⌨️
+colorFrom: indigo
+colorTo: blue
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # Keystroke Rhythm Based User Verifier
 
 ## Overview
